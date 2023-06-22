@@ -1,12 +1,20 @@
-// ignore_for_file: library_private_types_in_public_api
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:smartlock/home-page.dart';
+import 'package:smartlock/mobile_app.dart';
+import 'package:smartlock/signup-page.dart';
+
+import 'dart:io';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:smartlock/home-page.dart';
 import 'package:smartlock/signup-page.dart';
-import 'package:smartlock/splash_screen.dart';
 
 class LoginPage extends StatefulWidget {
   final String email;
@@ -45,13 +53,26 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text,
       );
       print('User ${userCredential.user?.uid} logged in.');
-      // Navigate to the home page or any other page in your app.
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (context) => Home()));
+
+      if (kIsWeb) {
+        // Web platform
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      } else if (Platform.isAndroid || Platform.isIOS) {
+        // Mobile platform
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MobileApp()),
+        );
+      } else {
+        // Desktop platform
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       print('Failed to log in: ${e.message}');
       showErrorSnackBar(context, 'Login failed!');
-      // Show an error message to the user.
     }
   }
 
@@ -67,9 +88,23 @@ class _LoginPageState extends State<LoginPage> {
       final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
       print('User ${userCredential.user?.uid} logged in with Google.');
-      // Add navigation to home page here.
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (context) => Home()));
+
+      if (kIsWeb) {
+        // Web platform
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      } else if (Platform.isAndroid || Platform.isIOS) {
+        // Mobile platform
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MobileApp()),
+        );
+      } else {
+        // Desktop platform
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      }
     } catch (e) {
       print('Failed to sign in with Google: $e');
       showErrorSnackBar(
@@ -78,90 +113,93 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void showErrorSnackBar(BuildContext context, String message) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      backgroundColor: Colors.red,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
     );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login Page'),
+        title: Text('Login'),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Username/Email',
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Username/Email',
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16.0),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
+                SizedBox(height: 16.0),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: _login,
-                child: Text('Login'),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Container(
-                width: 200,
-                child: ElevatedButton(
-                  onPressed: _signInWithGoogle,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/google_logo.jpeg',
-                        height: 24,
-                      ),
-                      SizedBox(width: 10),
-                      Text('Sign in with Google'),
-                    ],
+                SizedBox(height: 16.0),
+                ElevatedButton(
+                  onPressed: _login,
+                  child: Text('Login'),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  width: 200,
+                  child: ElevatedButton(
+                    onPressed: _signInWithGoogle,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/google_logo.jpeg',
+                          height: 24,
+                        ),
+                        SizedBox(width: 10),
+                        Text('Sign in with Google'),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SignUpPage()),
-                  );
-                },
-                child: Text('Sign Up'),
-              ),
-            ],
+                SizedBox(
+                  height: 10,
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SignUpPage()),
+                    );
+                  },
+                  child: Text('Sign Up'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
